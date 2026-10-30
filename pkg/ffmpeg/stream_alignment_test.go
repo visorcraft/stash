@@ -1,6 +1,10 @@
 package ffmpeg
 
-import "testing"
+import (
+	"net/http"
+	"net/http/httptest"
+	"testing"
+)
 
 func TestValidHLSAlignment(t *testing.T) {
 	tests := []struct {
@@ -55,5 +59,25 @@ func TestAlignedHLSForcesCPUAndDisablesFullHardware(t *testing.T) {
 	}
 	if !fullHardwareWithAlignment(true, "") {
 		t.Fatal("ordinary HLS must preserve the hardware setting")
+	}
+}
+
+func TestHLSSegmentQuery(t *testing.T) {
+	req := httptest.NewRequest(
+		http.MethodGet,
+		"http://stash.example/scene/7/stream.m3u8?resolution=STANDARD&align=16x8&apikey=test-only",
+		nil,
+	)
+	got := hlsSegmentQuery(req.URL, "STANDARD")
+	want := "?align=16x8&apikey=test-only&resolution=STANDARD"
+	if got != want {
+		t.Fatalf("segment query = %q, want %q", got, want)
+	}
+}
+
+func TestHLSSegmentQueryWithoutAlignment(t *testing.T) {
+	req := httptest.NewRequest(http.MethodGet, "http://stash.example/scene/7/stream.m3u8", nil)
+	if got := hlsSegmentQuery(req.URL, ""); got != "" {
+		t.Fatalf("ordinary segment query = %q, want empty", got)
 	}
 }

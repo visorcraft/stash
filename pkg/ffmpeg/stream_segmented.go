@@ -436,22 +436,7 @@ func serveHLSManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request,
 	baseUrl.RawQuery = ""
 	baseURL := prefix + baseUrl.String()
 
-	urlQuery := url.Values{}
-	apikey := r.URL.Query().Get(apiKeyParamKey)
-
-	if resolution != "" {
-		urlQuery.Set(resolutionParamKey, resolution)
-	}
-
-	// TODO - this needs to be handled outside of this package
-	if apikey != "" {
-		urlQuery.Set(apiKeyParamKey, apikey)
-	}
-
-	urlQueryString := ""
-	if len(urlQuery) > 0 {
-		urlQueryString = "?" + urlQuery.Encode()
-	}
+	urlQueryString := hlsSegmentQuery(r.URL, resolution)
 
 	var buf bytes.Buffer
 

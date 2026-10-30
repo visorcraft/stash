@@ -1,9 +1,28 @@
 package ffmpeg
 
+import "net/url"
+
 const (
 	AlignmentParamKey   = "align"
 	StreamAlignment16x8 = "16x8"
 )
+
+func hlsSegmentQuery(requestURL *url.URL, resolution string) string {
+	query := url.Values{}
+	if resolution != "" {
+		query.Set(resolutionParamKey, resolution)
+	}
+	if alignment := requestURL.Query().Get(AlignmentParamKey); alignment != "" {
+		query.Set(AlignmentParamKey, alignment)
+	}
+	if apiKey := requestURL.Query().Get(apiKeyParamKey); apiKey != "" {
+		query.Set(apiKeyParamKey, apiKey)
+	}
+	if len(query) == 0 {
+		return ""
+	}
+	return "?" + query.Encode()
+}
 
 func ValidHLSAlignment(streamType *StreamType, alignment string) bool {
 	if alignment == "" {
